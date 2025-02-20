@@ -1,4 +1,4 @@
-package com.sbproject.gameplatform.domain;
+package com.sbproject.gameplatform.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Entity
 @Table(name = "games")
-public class Game {
+public class GameEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "game_id_seq")
@@ -22,6 +22,6 @@ public class Game {
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "company_id")
-    private Company company;
+    private CompanyEntity companyEntity;
 
 }

@@ -1,4 +1,7 @@
 package com.sbproject.gameplatform.services;
 
-public class CompanyService {
+import com.sbproject.gameplatform.domain.entities.CompanyEntity;
+
+public interface CompanyService {
+    CompanyEntity createCompany(CompanyEntity companyEntity);
 }
