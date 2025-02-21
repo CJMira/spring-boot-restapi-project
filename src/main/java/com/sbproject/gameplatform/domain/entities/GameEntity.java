@@ -22,6 +22,6 @@ public class GameEntity {
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "company_id")
-    private CompanyEntity companyEntity;
+    private CompanyEntity company;
 
 }

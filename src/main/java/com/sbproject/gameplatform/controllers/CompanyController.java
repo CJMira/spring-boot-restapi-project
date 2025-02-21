@@ -4,6 +4,8 @@ import com.sbproject.gameplatform.domain.dto.CompanyDTO;
 import com.sbproject.gameplatform.domain.entities.CompanyEntity;
 import com.sbproject.gameplatform.mappers.Mapper;
 import com.sbproject.gameplatform.services.CompanyService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,11 +23,11 @@ public class CompanyController {
     }
 
     @PostMapping(path = "/companies")
-    public CompanyDTO createCompany(@RequestBody CompanyDTO company){
+    public ResponseEntity<CompanyDTO> createCompany(@RequestBody CompanyDTO company){
         CompanyEntity companyEntity = companyMapper.mapFrom(company);
         CompanyEntity savedCompanyEntity = companyService.createCompany(companyEntity);
 
-        return companyMapper.mapTo(savedCompanyEntity);
+        return new ResponseEntity<>(companyMapper.mapTo(savedCompanyEntity), HttpStatus.CREATED);
     }
 
 }
