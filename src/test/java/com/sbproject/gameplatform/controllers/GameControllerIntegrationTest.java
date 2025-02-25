@@ -3,7 +3,9 @@ package com.sbproject.gameplatform.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sbproject.gameplatform.TestDataUtil;
+import com.sbproject.gameplatform.domain.entities.CompanyEntity;
 import com.sbproject.gameplatform.domain.entities.GameEntity;
+import com.sbproject.gameplatform.services.GameService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,19 +18,24 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
 public class GameControllerIntegrationTest {
 
+    private GameService gameService;
+
     private MockMvc mockMvc;
 
     private ObjectMapper objectMapper;
 
     @Autowired
-    public GameControllerIntegrationTest(MockMvc mockMvc, ObjectMapper objectMapper) {
+    public GameControllerIntegrationTest(GameService gameService, MockMvc mockMvc, ObjectMapper objectMapper) {
+        this.gameService = gameService;
         this.mockMvc = mockMvc;
         this.objectMapper = objectMapper;
     }
@@ -65,5 +72,34 @@ public class GameControllerIntegrationTest {
         ).andExpect(
                 MockMvcResultMatchers.jsonPath("$.title").value("Dungeonmania")
         ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatListGamesReturnsHttp200() throws Exception {
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/games")
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isOk()
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatListGamesReturnsSavedGames() throws Exception {
+        GameEntity testGameEntityA = TestDataUtil.createTestGameA(null);
+        testGameEntityA.setId(null);
+        GameEntity savedEntity = gameService.createGame(testGameEntityA);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/games")
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andDo(print()
+        ).andExpect(content().string(containsString("{\"" +
+                "id\":"+savedEntity.getId()+
+                ",\"title\":\""+savedEntity.getTitle()+"\"" +
+                ",\"company\":"+savedEntity.getCompany()+
+                "}")));
     }
 }
