@@ -1,9 +1,8 @@
 package com.sbproject.gameplatform.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sbproject.gameplatform.TestDataUtil;
-import com.sbproject.gameplatform.domain.entities.CompanyEntity;
+import com.sbproject.gameplatform.domain.dto.GameDTO;
 import com.sbproject.gameplatform.domain.entities.GameEntity;
 import com.sbproject.gameplatform.services.GameService;
 import jakarta.transaction.Transactional;
@@ -90,7 +89,7 @@ public class GameControllerIntegrationTest {
     public void testThatListGamesReturnsSavedGames() throws Exception {
         GameEntity testGameEntityA = TestDataUtil.createTestGameA(null);
         testGameEntityA.setId(null);
-        GameEntity savedEntity = gameService.createGame(testGameEntityA);
+        GameEntity savedEntity = gameService.save(testGameEntityA);
 
         mockMvc.perform(
                 MockMvcRequestBuilders.get("/games")
@@ -102,4 +101,157 @@ public class GameControllerIntegrationTest {
                 ",\"company\":"+savedEntity.getCompany()+
                 "}")));
     }
+
+    @Test
+    @Transactional
+    public void testThatGetGameReturnsHttp200WhenExists() throws Exception {
+        GameEntity testGameEntityA = TestDataUtil.createTestGameA(null);
+        testGameEntityA.setId(null);
+        GameEntity savedGame = gameService.save(testGameEntityA);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/games/"+savedGame.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isOk()
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatGetGameReturnsHttp404WhenDoesNotExist() throws Exception {
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/games/882835")
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isNotFound()
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatGetGameReturnsGameWhenExists() throws Exception {
+        GameEntity testGameA = TestDataUtil.createTestGameA(null);
+        testGameA.setId(null);
+        GameEntity savedGame = gameService.save(testGameA);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/games/"+savedGame.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.id").value(savedGame.getId())
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.title").value(savedGame.getTitle())
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.company").value(savedGame.getCompany())
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatFullUpdateGameReturnsHttp404WhenDoesNotExist() throws Exception {
+        GameDTO testGameDTO = TestDataUtil.createTestGameDTO_A(null);
+        String gameJson = objectMapper.writeValueAsString(testGameDTO);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.put("/games/882835")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(gameJson)
+        ).andExpect(
+                MockMvcResultMatchers.status().isNotFound()
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatFullUpdateGameReturnsHttp200WhenExists() throws Exception {
+        GameEntity testGameA = TestDataUtil.createTestGameA(null);
+        testGameA.setId(null);
+        GameEntity savedGame = gameService.save(testGameA);
+
+        GameDTO testGameDTO = TestDataUtil.createTestGameDTO_A(null);
+        String gameJson = objectMapper.writeValueAsString(testGameDTO);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.put("/games/"+savedGame.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(gameJson)
+        ).andExpect(
+                MockMvcResultMatchers.status().isOk()
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatFullUpdateGameUpdatesExistingGame() throws Exception {
+        GameEntity testGameA = TestDataUtil.createTestGameA(null);
+        testGameA.setId(null);
+        GameEntity savedGame = gameService.save(testGameA);
+
+        GameEntity testGameB = TestDataUtil.createTestGameB(null);
+        testGameB.setId(savedGame.getId());
+
+        String updatedGameJson = objectMapper.writeValueAsString(testGameB);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.put("/games/"+savedGame.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatedGameJson)
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.id").value(savedGame.getId())
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.title").value(testGameB.getTitle())
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.company").value(testGameB.getCompany())
+        ).andDo(print());
+
+    }
+
+    @Test
+    @Transactional
+    public void testThatPartialUpdateGameReturnsHttp200WhenExists() throws Exception {
+        GameEntity testGameA = TestDataUtil.createTestGameA(null);
+        testGameA.setId(null);
+        GameEntity savedGame = gameService.save(testGameA);
+
+        GameDTO testGameDTO = TestDataUtil.createTestGameDTO_A(null);
+        testGameDTO.setTitle(testGameDTO.getTitle() + " 2");
+        String gameJson = objectMapper.writeValueAsString(testGameDTO);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.patch("/games/"+savedGame.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(gameJson)
+        ).andExpect(
+                MockMvcResultMatchers.status().isOk()
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatPartialUpdateGameUpdatesExistingGame() throws Exception {
+        GameEntity testGameA = TestDataUtil.createTestGameA(null);
+        testGameA.setId(null);
+        GameEntity savedGame = gameService.save(testGameA);
+
+        GameEntity testGameB = TestDataUtil.createTestGameB(null);
+        testGameB.setTitle(testGameB.getTitle() + " 2");
+        testGameB.setId(savedGame.getId());
+
+        String updatedGameJson = objectMapper.writeValueAsString(testGameB);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.patch("/games/"+savedGame.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatedGameJson)
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.id").value(savedGame.getId())
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.title").value(testGameB.getTitle())
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.company").value(testGameB.getCompany())
+        ).andDo(print());
+
+    }
+
 }

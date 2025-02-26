@@ -6,6 +6,7 @@ import com.sbproject.gameplatform.services.GameService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -19,7 +20,7 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public GameEntity createGame(GameEntity gameEntity) {
+    public GameEntity save(GameEntity gameEntity) {
         return gameRepository.save(gameEntity);
     }
 
@@ -31,5 +32,25 @@ public class GameServiceImpl implements GameService {
                                 .spliterator()
                         ,false)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<GameEntity> findOne(Long id) {
+        return gameRepository.findById(id);
+    }
+
+    @Override
+    public boolean isExists(Long id) {
+        return gameRepository.existsById(id);
+    }
+
+    @Override
+    public GameEntity partialUpdate(Long id, GameEntity gameEntity) {
+        gameEntity.setId(id);
+
+        return gameRepository.findById(id).map(existingGame ->{
+            Optional.ofNullable(gameEntity.getTitle()).ifPresent(existingGame::setTitle);
+            return gameRepository.save(existingGame);
+        }).orElseThrow(() -> new RuntimeException("Game does not exist"));
     }
 }

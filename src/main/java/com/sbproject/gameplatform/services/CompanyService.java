@@ -3,9 +3,16 @@ package com.sbproject.gameplatform.services;
 import com.sbproject.gameplatform.domain.entities.CompanyEntity;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CompanyService {
-    CompanyEntity createCompany(CompanyEntity companyEntity);
+    CompanyEntity save(CompanyEntity companyEntity);
 
     List<CompanyEntity> findAll();
+
+    Optional<CompanyEntity> findOne(Long id);
+
+    boolean isExists(Long id);
+
+    CompanyEntity partialUpdate(Long id, CompanyEntity companyEntity);
 }

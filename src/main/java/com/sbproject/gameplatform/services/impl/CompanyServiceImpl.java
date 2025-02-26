@@ -6,6 +6,7 @@ import com.sbproject.gameplatform.services.CompanyService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -19,7 +20,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public CompanyEntity createCompany(CompanyEntity companyEntity) {
+    public CompanyEntity save(CompanyEntity companyEntity) {
         return companyRepository.save(companyEntity);
     }
 
@@ -31,5 +32,26 @@ public class CompanyServiceImpl implements CompanyService {
                                 .spliterator()
                         ,false)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<CompanyEntity> findOne(Long id) {
+        return companyRepository.findById(id);
+    }
+
+    @Override
+    public boolean isExists(Long id) {
+        return companyRepository.existsById(id);
+    }
+
+    @Override
+    public CompanyEntity partialUpdate(Long id, CompanyEntity companyEntity) {
+        companyEntity.setId(id);
+
+        return companyRepository.findById(id).map(existingCompany ->{
+            Optional.ofNullable(companyEntity.getName()).ifPresent(existingCompany::setName);
+            Optional.ofNullable(companyEntity.getYearFounded()).ifPresent(existingCompany::setYearFounded);
+            return companyRepository.save(existingCompany);
+        }).orElseThrow(() -> new RuntimeException("Company does not exist"));
     }
 }

@@ -2,6 +2,7 @@ package com.sbproject.gameplatform.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sbproject.gameplatform.TestDataUtil;
+import com.sbproject.gameplatform.domain.dto.CompanyDTO;
 import com.sbproject.gameplatform.domain.entities.CompanyEntity;
 import com.sbproject.gameplatform.services.CompanyService;
 import jakarta.transaction.Transactional;
@@ -11,10 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -43,9 +42,9 @@ public class CompanyControllerIntegrationTests {
     @Test
     @Transactional
     public void testThatCreateCompanyReturnsHttp201Created() throws Exception {
-        CompanyEntity testCompanyA = TestDataUtil.createTestCompanyA();
-        testCompanyA.setId(null);
-        String companyJson = objectMapper.writeValueAsString(testCompanyA);
+        CompanyDTO testCompanyDTO = TestDataUtil.createTestCompanyDTO_A();
+        testCompanyDTO.setId(null);
+        String companyJson = objectMapper.writeValueAsString(testCompanyDTO);
 
         mockMvc.perform(
                 MockMvcRequestBuilders.post("/companies")
@@ -59,9 +58,9 @@ public class CompanyControllerIntegrationTests {
     @Test
     @Transactional
     public void testThatCreateCompanyReturnsSavedCompany() throws Exception {
-        CompanyEntity testCompanyA = TestDataUtil.createTestCompanyA();
-        testCompanyA.setId(null);
-        String companyJson = objectMapper.writeValueAsString(testCompanyA);
+        CompanyDTO testCompanyDTO = TestDataUtil.createTestCompanyDTO_A();
+        testCompanyDTO.setId(null);
+        String companyJson = objectMapper.writeValueAsString(testCompanyDTO);
 
         mockMvc.perform(
                 MockMvcRequestBuilders.post("/companies")
@@ -93,7 +92,7 @@ public class CompanyControllerIntegrationTests {
     public void testThatListCompaniesReturnsSavedCompanies() throws Exception{
         CompanyEntity testCompanyEntityA = TestDataUtil.createTestCompanyA();
         testCompanyEntityA.setId(null);
-        CompanyEntity savedEntity = companyService.createCompany(testCompanyEntityA);
+        CompanyEntity savedEntity = companyService.save(testCompanyEntityA);
 
         mockMvc.perform(
                 MockMvcRequestBuilders.get("/companies")
@@ -104,6 +103,155 @@ public class CompanyControllerIntegrationTests {
                 ",\"name\":\""+savedEntity.getName()+"\"" +
                 ",\"yearFounded\":"+savedEntity.getYearFounded()+
                 "}")));
+    }
+
+    @Test
+    @Transactional
+    public void testThatGetCompanyReturnsHttp200WhenExists() throws Exception {
+        CompanyEntity testCompanyEntityA = TestDataUtil.createTestCompanyA();
+        testCompanyEntityA.setId(null);
+        CompanyEntity savedCompany = companyService.save(testCompanyEntityA);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/companies/"+savedCompany.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isOk()
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatGetCompanyReturnsHttp404WhenDoesNotExist() throws Exception {
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/companies/882835")
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isNotFound()
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatGetCompanyReturnsCompanyWhenExists() throws Exception {
+        CompanyEntity testCompanyA = TestDataUtil.createTestCompanyA();
+        testCompanyA.setId(null);
+        CompanyEntity savedCompany = companyService.save(testCompanyA);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/companies/"+savedCompany.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.id").value(savedCompany.getId())
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.name").value("Mambo")
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.yearFounded").value(1980)
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatFullUpdateCompanyReturnsHttp404WhenDoesNotExist() throws Exception {
+        CompanyDTO testCompanyDTO = TestDataUtil.createTestCompanyDTO_A();
+        String companyJson = objectMapper.writeValueAsString(testCompanyDTO);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.put("/companies/882835")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(companyJson)
+        ).andExpect(
+                MockMvcResultMatchers.status().isNotFound()
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatFullUpdateCompanyReturnsHttp200WhenExists() throws Exception {
+        CompanyEntity testCompanyA = TestDataUtil.createTestCompanyA();
+        testCompanyA.setId(null);
+        CompanyEntity savedCompany = companyService.save(testCompanyA);
+
+        CompanyDTO testCompanyDTO = TestDataUtil.createTestCompanyDTO_A();
+        String companyJson = objectMapper.writeValueAsString(testCompanyDTO);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.put("/companies/"+savedCompany.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(companyJson)
+        ).andExpect(
+                MockMvcResultMatchers.status().isOk()
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatFullUpdateCompanyUpdatesExistingCompany() throws Exception {
+        CompanyEntity testCompanyA = TestDataUtil.createTestCompanyA();
+        testCompanyA.setId(null);
+        CompanyEntity savedCompany = companyService.save(testCompanyA);
+
+        CompanyEntity testCompanyB = TestDataUtil.createTestCompanyB();
+        testCompanyB.setId(savedCompany.getId());
+
+        String updatedCompanyJson = objectMapper.writeValueAsString(testCompanyB);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.put("/companies/"+savedCompany.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatedCompanyJson)
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.id").value(savedCompany.getId())
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.name").value(testCompanyB.getName())
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.yearFounded").value(testCompanyB.getYearFounded())
+        ).andDo(print());
+
+    }
+
+    @Test
+    @Transactional
+    public void testThatPartialUpdateCompanyReturnsHttp200WhenExists() throws Exception {
+        CompanyEntity testCompanyA = TestDataUtil.createTestCompanyA();
+        testCompanyA.setId(null);
+        CompanyEntity savedCompany = companyService.save(testCompanyA);
+
+        CompanyDTO testCompanyDTO = TestDataUtil.createTestCompanyDTO_A();
+        testCompanyDTO.setName("New " + testCompanyDTO.getName());
+        String companyJson = objectMapper.writeValueAsString(testCompanyDTO);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.patch("/companies/"+savedCompany.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(companyJson)
+        ).andExpect(
+                MockMvcResultMatchers.status().isOk()
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatPartialUpdateCompanyUpdatesExistingCompany() throws Exception {
+        CompanyEntity testCompanyA = TestDataUtil.createTestCompanyA();
+        testCompanyA.setId(null);
+        CompanyEntity savedCompany = companyService.save(testCompanyA);
+
+        CompanyDTO testCompanyDTO = TestDataUtil.createTestCompanyDTO_A();
+        testCompanyDTO.setName("New " + testCompanyDTO.getName());
+        String companyJson = objectMapper.writeValueAsString(testCompanyDTO);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.patch("/companies/"+savedCompany.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(companyJson)
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.id").value(savedCompany.getId())
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.name").value("New Mambo")
+        ).andExpect(
+                MockMvcResultMatchers.jsonPath("$.yearFounded").value(testCompanyDTO.getYearFounded())
+        ).andDo(print());
     }
 
 }

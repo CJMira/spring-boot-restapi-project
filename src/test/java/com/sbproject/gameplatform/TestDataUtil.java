@@ -1,6 +1,8 @@
 package com.sbproject.gameplatform;
 
 
+import com.sbproject.gameplatform.domain.dto.CompanyDTO;
+import com.sbproject.gameplatform.domain.dto.GameDTO;
 import com.sbproject.gameplatform.domain.entities.CompanyEntity;
 import com.sbproject.gameplatform.domain.entities.GameEntity;
 
@@ -9,6 +11,14 @@ public final class TestDataUtil {
 
     public static CompanyEntity createTestCompanyA(){
         return CompanyEntity.builder()
+                .id(1L)
+                .name("Mambo")
+                .yearFounded(1980)
+                .build();
+    }
+
+    public static CompanyDTO createTestCompanyDTO_A(){
+        return CompanyDTO.builder()
                 .id(1L)
                 .name("Mambo")
                 .yearFounded(1980)
@@ -36,6 +46,14 @@ public final class TestDataUtil {
                 .id(1L)
                 .title("Dungeonmania")
                 .company(companyEntity)
+                .build();
+    }
+
+    public static GameDTO createTestGameDTO_A(final CompanyDTO companyDTO){
+        return GameDTO.builder()
+                .id(1L)
+                .title("Dungeonmania")
+                .company(companyDTO)
                 .build();
     }
 

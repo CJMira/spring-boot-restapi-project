@@ -6,12 +6,10 @@ import com.sbproject.gameplatform.mappers.Mapper;
 import com.sbproject.gameplatform.services.CompanyService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -29,7 +27,7 @@ public class CompanyController {
     @PostMapping(path = "/companies")
     public ResponseEntity<CompanyDTO> createCompany(@RequestBody CompanyDTO company){
         CompanyEntity companyEntity = companyMapper.mapFrom(company);
-        CompanyEntity savedCompanyEntity = companyService.createCompany(companyEntity);
+        CompanyEntity savedCompanyEntity = companyService.save(companyEntity);
 
         return new ResponseEntity<>(companyMapper.mapTo(savedCompanyEntity), HttpStatus.CREATED);
     }
@@ -40,6 +38,42 @@ public class CompanyController {
         return companies.stream()
                 .map(companyMapper::mapTo)
                 .collect(Collectors.toList());
+    }
+
+    @GetMapping(path = "/companies/{id}")
+    public ResponseEntity<CompanyDTO> getCompany(@PathVariable("id") Long id){
+        Optional<CompanyEntity> foundCompany = companyService.findOne(id);
+        return foundCompany.map(companyEntity -> {
+            CompanyDTO companyDTO = companyMapper.mapTo(companyEntity);
+            return new ResponseEntity<>(companyDTO, HttpStatus.OK);
+        }).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @PutMapping(path = "companies/{id}")
+    public ResponseEntity<CompanyDTO> fullUpdateCompany(@PathVariable("id") Long id, @RequestBody CompanyDTO companyDTO){
+        if(!companyService.isExists(id)){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        companyDTO.setId(id);
+        CompanyEntity companyEntity = companyMapper.mapFrom(companyDTO);
+        CompanyEntity savedCompany = companyService.save(companyEntity);
+        return new ResponseEntity<>(
+                companyMapper.mapTo(savedCompany),
+                HttpStatus.OK);
+    }
+
+    @PatchMapping(path = "/companies/{id}")
+    public ResponseEntity<CompanyDTO> partialUpdate(@PathVariable("id") Long id, @RequestBody CompanyDTO companyDTO){
+        if(!companyService.isExists(id)){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        CompanyEntity companyEntity = companyMapper.mapFrom(companyDTO);
+        CompanyEntity updatedCompany = companyService.partialUpdate(id, companyEntity);
+        return new ResponseEntity<>(
+                companyMapper.mapTo(updatedCompany),
+                HttpStatus.OK);
     }
 
 }
