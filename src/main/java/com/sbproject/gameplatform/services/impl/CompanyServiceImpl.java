@@ -3,6 +3,8 @@ package com.sbproject.gameplatform.services.impl;
 import com.sbproject.gameplatform.domain.entities.CompanyEntity;
 import com.sbproject.gameplatform.repositories.CompanyRepository;
 import com.sbproject.gameplatform.services.CompanyService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,6 +34,11 @@ public class CompanyServiceImpl implements CompanyService {
                                 .spliterator()
                         ,false)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<CompanyEntity> findAll(Pageable pageable) {
+        return companyRepository.findAll(pageable);
     }
 
     @Override

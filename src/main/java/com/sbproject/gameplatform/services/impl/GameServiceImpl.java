@@ -3,6 +3,8 @@ package com.sbproject.gameplatform.services.impl;
 import com.sbproject.gameplatform.domain.entities.GameEntity;
 import com.sbproject.gameplatform.repositories.GameRepository;
 import com.sbproject.gameplatform.services.GameService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,6 +34,11 @@ public class GameServiceImpl implements GameService {
                                 .spliterator()
                         ,false)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<GameEntity> findAll(Pageable pageable) {
+        return gameRepository.findAll(pageable);
     }
 
     @Override

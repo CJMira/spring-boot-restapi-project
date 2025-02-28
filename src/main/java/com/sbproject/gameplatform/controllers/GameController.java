@@ -6,6 +6,8 @@ import com.sbproject.gameplatform.domain.entities.CompanyEntity;
 import com.sbproject.gameplatform.domain.entities.GameEntity;
 import com.sbproject.gameplatform.mappers.Mapper;
 import com.sbproject.gameplatform.services.GameService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,11 +37,9 @@ public class GameController {
     }
 
     @GetMapping(path = "/games")
-    public List<GameDTO> listGames(){
-        List<GameEntity> games = gameService.findAll();
-        return  games.stream()
-                .map(gameMapper::mapTo)
-                .collect(Collectors.toList());
+    public Page<GameDTO> listGames(Pageable pageable){
+        Page<GameEntity> games = gameService.findAll(pageable);
+        return games.map(gameMapper::mapTo);
     }
 
     @GetMapping(path = "/games/{id}")

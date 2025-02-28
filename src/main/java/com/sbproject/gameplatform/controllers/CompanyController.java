@@ -4,6 +4,8 @@ import com.sbproject.gameplatform.domain.dto.CompanyDTO;
 import com.sbproject.gameplatform.domain.entities.CompanyEntity;
 import com.sbproject.gameplatform.mappers.Mapper;
 import com.sbproject.gameplatform.services.CompanyService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,11 +35,9 @@ public class CompanyController {
     }
 
     @GetMapping(path = "/companies")
-    public List<CompanyDTO> listCompanies(){
-        List<CompanyEntity> companies = companyService.findAll();
-        return companies.stream()
-                .map(companyMapper::mapTo)
-                .collect(Collectors.toList());
+    public Page<CompanyDTO> listCompanies(Pageable pageable){
+        Page<CompanyEntity> companies = companyService.findAll(pageable);
+        return companies.map(companyMapper::mapTo);
     }
 
     @GetMapping(path = "/companies/{id}")
