@@ -254,4 +254,59 @@ public class CompanyControllerIntegrationTests {
         ).andDo(print());
     }
 
+    @Test
+    @Transactional
+    public void testThatDeleteCompanyReturnsHttp204OnExistingCompany() throws Exception {
+        CompanyEntity testCompanyA = TestDataUtil.createTestCompanyA();
+        testCompanyA.setId(null);
+        CompanyEntity savedCompany = companyService.save(testCompanyA);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.delete("/companies/"+savedCompany.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isNoContent()
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatDeleteCompanyReturnsHttp204OnNotExistingCompany() throws Exception {
+        mockMvc.perform(
+                MockMvcRequestBuilders.delete("/companies/74956")
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isNoContent()
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatDeleteCompanyDeletesExistingCompany() throws Exception {
+        CompanyEntity testCompanyA = TestDataUtil.createTestCompanyA();
+        testCompanyA.setId(null);
+        CompanyEntity savedCompany = companyService.save(testCompanyA);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/companies/"+savedCompany.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isOk()
+        ).andDo(print());
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.delete("/companies/"+savedCompany.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isNoContent()
+        );
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/companies/"+savedCompany.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isNotFound()
+        ).andDo(print());
+    }
+
 }

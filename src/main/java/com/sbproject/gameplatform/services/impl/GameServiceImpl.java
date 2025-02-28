@@ -53,4 +53,9 @@ public class GameServiceImpl implements GameService {
             return gameRepository.save(existingGame);
         }).orElseThrow(() -> new RuntimeException("Game does not exist"));
     }
+
+    @Override
+    public void delete(Long id) {
+        gameRepository.deleteById(id);
+    }
 }

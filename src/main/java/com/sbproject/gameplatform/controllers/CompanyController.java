@@ -76,4 +76,10 @@ public class CompanyController {
                 HttpStatus.OK);
     }
 
+    @DeleteMapping(path = "/companies/{id}")
+    public ResponseEntity deleteCompany(@PathVariable("id") Long id){
+        companyService.delete(id);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
 }

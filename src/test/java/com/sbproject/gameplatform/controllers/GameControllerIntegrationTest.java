@@ -251,7 +251,61 @@ public class GameControllerIntegrationTest {
         ).andExpect(
                 MockMvcResultMatchers.jsonPath("$.company").value(testGameB.getCompany())
         ).andDo(print());
+    }
 
+    @Test
+    @Transactional
+    public void testThatDeleteGameReturnsHttp204OnExistingGame() throws Exception {
+        GameEntity testGameA = TestDataUtil.createTestGameA(null);
+        testGameA.setId(null);
+        GameEntity savedGame = gameService.save(testGameA);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.delete("/games/"+savedGame.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isNoContent()
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatDeleteGameReturnsHttp204OnNotExistingGame() throws Exception {
+        mockMvc.perform(
+                MockMvcRequestBuilders.delete("/games/73457")
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isNoContent()
+        ).andDo(print());
+    }
+
+    @Test
+    @Transactional
+    public void testThatDeleteGameDeletesExistingGame() throws Exception {
+        GameEntity testGameA = TestDataUtil.createTestGameA(null);
+        testGameA.setId(null);
+        GameEntity savedGame = gameService.save(testGameA);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/games/"+savedGame.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isOk()
+        ).andDo(print());
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.delete("/games/"+savedGame.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isNoContent()
+        );
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/games/"+savedGame.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isNotFound()
+        ).andDo(print());
     }
 
 }

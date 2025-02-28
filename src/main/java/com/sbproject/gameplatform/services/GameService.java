@@ -16,4 +16,6 @@ public interface GameService {
     boolean isExists(Long id);
 
     GameEntity partialUpdate(Long id, GameEntity gameEntity);
+
+    void delete(Long id);
 }

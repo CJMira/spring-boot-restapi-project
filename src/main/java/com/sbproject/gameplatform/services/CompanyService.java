@@ -15,4 +15,6 @@ public interface CompanyService {
     boolean isExists(Long id);
 
     CompanyEntity partialUpdate(Long id, CompanyEntity companyEntity);
+
+    void delete(Long id);
 }
