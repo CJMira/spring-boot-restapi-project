@@ -91,11 +91,12 @@ public class CompanyControllerIntegrationTests {
     //Checks new saved company is included in the list
     public void testThatListCompaniesReturnsSavedCompanies() throws Exception{
         CompanyEntity testCompanyEntityA = TestDataUtil.createTestCompanyA();
+        testCompanyEntityA.setName("AAAAAAAAAAAAAAAAA"+testCompanyEntityA.getName());
         testCompanyEntityA.setId(null);
         CompanyEntity savedEntity = companyService.save(testCompanyEntityA);
 
         mockMvc.perform(
-                MockMvcRequestBuilders.get("/companies")
+                MockMvcRequestBuilders.get("/companies?sort=name")
                         .contentType(MediaType.APPLICATION_JSON)
         ).andDo(print()
         ).andExpect(content().string(containsString("{\"" +

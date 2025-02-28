@@ -69,7 +69,7 @@ public class GameControllerIntegrationTest {
         ).andExpect(
                 MockMvcResultMatchers.jsonPath("$.id").isNumber()
         ).andExpect(
-                MockMvcResultMatchers.jsonPath("$.title").value("Dungeonmania")
+                MockMvcResultMatchers.jsonPath("$.title").value(testGameA.getTitle())
         ).andDo(print());
     }
 
@@ -89,10 +89,11 @@ public class GameControllerIntegrationTest {
     public void testThatListGamesReturnsSavedGames() throws Exception {
         GameEntity testGameEntityA = TestDataUtil.createTestGameA(null);
         testGameEntityA.setId(null);
+        testGameEntityA.setTitle("AAAAAAAAAAAA" + testGameEntityA.getTitle());
         GameEntity savedEntity = gameService.save(testGameEntityA);
 
         mockMvc.perform(
-                MockMvcRequestBuilders.get("/games")
+                MockMvcRequestBuilders.get("/games?sort=title")
                         .contentType(MediaType.APPLICATION_JSON)
         ).andDo(print()
         ).andExpect(content().string(containsString("{\"" +
